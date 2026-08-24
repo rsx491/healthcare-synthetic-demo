@@ -1,0 +1,11 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  drug_name: MyString
+  status: MyString
+  remaining_fills: 1
+
+two:
+  drug_name: MyString
+  status: MyString
+  remaining_fills: 1
