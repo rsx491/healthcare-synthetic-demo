@@ -2,18 +2,15 @@ class PrescriptionsController < ApplicationController
   def fulfill
     prescription = Prescription.find(params[:id])
 
-    unless prescription.status == "active"
-      return render json: { error: "Prescription is not active" }, status: :unprocessable_entity
-    end
+    prescription.with_lock do
+      unless prescription.status == "active"
+        return render json: { error: "Prescription is not active" }, status: :unprocessable_entity
+      end
 
-    unless prescription.remaining_fills > 0
-      return render json: { error: "No fills remaining" }, status: :unprocessable_entity
-    end
+      unless prescription.remaining_fills > 0
+        return render json: { error: "No fills remaining" }, status: :unprocessable_entity
+      end
 
-    # Deliberately widen the race-condition window for the demo
-    sleep 0.25
-
-    Prescription.transaction do
       Fulfillment.create!(
         prescription: prescription,
         status: "completed"

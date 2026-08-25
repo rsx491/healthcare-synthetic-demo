@@ -22,7 +22,9 @@ services:
       - "3000:3000"
     environment:
       RAILS_ENV: development
-      DATABASE_URL: postgresql://postgres:postgres@db:5432/healthcare_synthetic_demo_development
+      DATABASE_HOST: db
+      DATABASE_USER: postgres
+      DATABASE_PASSWORD: postgres
     depends_on:
       db:
         condition: service_healthy
