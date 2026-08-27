@@ -2,39 +2,34 @@ class PrescriptionsController < ApplicationController
   def fulfill
     prescription = Prescription.find(params[:id])
 
-    unless prescription.status == "active"
-      return render json: { error: "Prescription is not active" }, status: :unprocessable_entity
-    end
+    updated_rows = Prescription
+      .where(
+        id: prescription.id,
+        status: "active"
+      )
+      .where("remaining_fills > 0")
+      .update_all("remaining_fills = remaining_fills - 1")
 
-    unless prescription.remaining_fills > 0
-      return render json: { error: "No fills remaining" }, status: :unprocessable_entity
-    end
-
-    begin
-      Prescription.transaction do
-        Fulfillment.create!(
-          prescription: prescription,
-          status: "completed"
-        )
-
-        prescription.update!(
-          remaining_fills: prescription.remaining_fills - 1
-        )
-      end
-    rescue ActiveRecord::StaleObjectError
+    if updated_rows.zero?
       prescription.reload
 
       return render json: {
-        error: "Prescription changed during fulfillment",
+        error: "Prescription is not active or has no fills remaining",
         remaining_fills: prescription.remaining_fills
-      }, status: :conflict
+      }, status: :unprocessable_entity
     end
+
+    Fulfillment.create!(
+      prescription: prescription,
+      status: "completed"
+    )
+
+    prescription.reload
 
     render json: {
       prescription_id: prescription.id,
       status: "fulfilled",
-      remaining_fills: prescription.remaining_fills,
-      lock_version: prescription.lock_version
+      remaining_fills: prescription.remaining_fills
     }, status: :ok
   end
 end
