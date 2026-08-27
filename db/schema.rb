@@ -10,15 +10,17 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_26_173426) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_27_201516) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
   create_table "fulfillments", force: :cascade do |t|
     t.datetime "created_at", null: false
+    t.string "idempotency_key", null: false
     t.bigint "prescription_id", null: false
     t.string "status"
     t.datetime "updated_at", null: false
+    t.index ["idempotency_key"], name: "index_fulfillments_on_idempotency_key", unique: true
     t.index ["prescription_id"], name: "index_fulfillments_on_prescription_id"
   end
 
